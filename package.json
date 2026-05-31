@@ -1,0 +1,24 @@
+{
+  "name": "discord_croissantllmbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alloy-Lou/Discord_CroissantLLMBot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Alloy-Lou/Discord_CroissantLLMBot/issues"
+  },
+  "homepage": "https://github.com/Alloy-Lou/Discord_CroissantLLMBot#readme",
+  "dependencies": {
+    "discord.js": "^14.26.4"
+  }
+}
