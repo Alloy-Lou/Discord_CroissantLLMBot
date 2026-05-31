@@ -1,8 +1,17 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
+const { ApplicationCommandType, EmbedBuilder, Client, CommandInteraction } = require("discord.js");
+const { time, TimestampStyles } = require('discord.js');
+
 
 let isLLMBusy = false;
 
 module.exports = {
+    /**
+   * 
+   * @param {Client} client - The Discord client instance
+   * @param {CommandInteraction} interaction - The interaction object
+   */
     data: new SlashCommandBuilder()
         .setName('prompt')
         .setDescription("Discutez avec CroissantLLM")
@@ -25,6 +34,13 @@ module.exports = {
 
         const userPrompt = interaction.options.getString('prompt');
         const OLLAMA_URL = 'http://localhost:11434/api/generate';
+
+        const embed = new EmbedBuilder()
+            .setColor('#f09d3e')
+            .setAuthor(interaction.member.nickname, interaction.member.avatarURL)
+            .setTitle(userPrompt.substring(0, 1024))
+            .setDescription('...')
+            //.addField("Génération de la réponse en cours...", `Dernière mise à jour : ${time(new Date().now(), TimestampStyles.RelativeTime)}`)
         
         let fullResponse = '';
         let lastSentResponse = '';
@@ -50,9 +66,19 @@ module.exports = {
                 // Only update if text has actually changed and isn't empty
                 if (fullResponse !== lastSentResponse && fullResponse.trim().length > 0) {
                     lastSentResponse = fullResponse;
+
+                    const now = new Date();
+                    const nextUpdate = new Date(Date.now() + 5000);
+                    embed.setDescription(currentText.substring(0, 4000))
+                        .setFields([{ 
+                            name: "Génération de la réponse en cours...",
+                            value: `Dernière mise à jour : ${time(now, TimestampStyles.RelativeTime)}\
+                            \nProchaine mise à jour : ${time(nextUpdate, TimestampStyles.RelativeTime)}`
+                        }])
+
                     try {
                         // Discord messages are capped at 2000 characters
-                        await interaction.editReply(fullResponse.substring(0, 2000));
+                        await interaction.editReply({ embeds: [embed] });
                     } catch (discordError) {
                         console.error('Error editing Discord message during stream:', discordError);
                     }
