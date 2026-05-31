@@ -72,7 +72,7 @@ module.exports = {
 
                     const now = new Date();
                     const nextUpdate = new Date(Date.now() + 5000);
-                    embed.setDescription(currentText.substring(0, 4000))
+                    embed.setDescription(fullResponse.substring(0, 4000))
                         .setFields([{ 
                             name: "Génération de la réponse en cours...",
                             value: `Dernière mise à jour : ${time(now, TimestampStyles.RelativeTime)}\
@@ -133,8 +133,11 @@ module.exports = {
             if (intervalId) clearInterval(intervalId);
 
             try {
-                const finalOutput = fullResponse.trim() || "Je n'ai pas pu générer une réponse valide.";
-                await interaction.editReply(finalOutput.substring(0, 2000));
+                embed.setDescription(finalOutput.substring(0, 4000))
+                     .setFields([]) // Strips out the countdown metadata cleanly
+                     .setColor('#2ECC71'); // Green for complete
+
+                await interaction.editReply({ embeds: [embed] });
             } catch (finalDiscordError) {
                 console.error('Error sending final response edit:', finalDiscordError);
             }
