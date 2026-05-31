@@ -42,7 +42,7 @@ module.exports = {
             .setColor('#f09d3e')
             .setAuthor({
                 name: interaction.member.nickname,
-                iconURL: interaction.member.avatarURL()
+                iconURL: interaction.member.avatar? interaction.member.avatarURL() : interaction.user.displayAvatarURL()
             })
             .setTitle(userPrompt.substring(0, 1024))
             .setDescription('...')
@@ -144,7 +144,7 @@ module.exports = {
             }
 
             try {
-                embed.setDescription(finalOutput.substring(0, 4096))
+                embed.setDescription(finalText.substring(0, 4096))
                      .setFields([{ 
                             name: "Temps total de génération :",
                             value: formatTempsJoliment(totalDurationNs)
