@@ -37,7 +37,10 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor('#f09d3e')
-            .setAuthor(interaction.member.nickname, interaction.member.avatarURL)
+            .setAuthor({
+                name: interaction.member.nickname,
+                iconURL: interaction.member.avatarURL()
+            })
             .setTitle(userPrompt.substring(0, 1024))
             .setDescription('...')
             //.addField("Génération de la réponse en cours...", `Dernière mise à jour : ${time(new Date().now(), TimestampStyles.RelativeTime)}`)
