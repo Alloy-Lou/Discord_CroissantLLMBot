@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { EmbedBuilder } = require('discord.js');
+//const { EmbedBuilder } = require('discord.js');
 const { ApplicationCommandType, EmbedBuilder, Client, CommandInteraction } = require("discord.js");
 const { time, TimestampStyles } = require('discord.js');
 
