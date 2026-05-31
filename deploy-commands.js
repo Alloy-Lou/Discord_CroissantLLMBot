@@ -5,11 +5,11 @@ const path = require('node:path');
 
 const commands = [];
 // Grab all the command folders from the commands directory you created earlier
-const foldersPath = path.join(__dirname, 'commands');
-const commandFolders = fs.readdirSync(foldersPath);
-const commandFiles = fs.readdirSync(commandFolders).filter((file) => file.endsWith('.js'));
+const folderPath = path.join(__dirname, 'commands');
+const commandFolder = fs.readdirSync(folderPath);
+const commandFiles = commandFolder.filter((file) => file.endsWith('.js'));
 	for (const file of commandFiles) {
-		const filePath = path.join(commandsPath, file);
+		const filePath = path.join(folderPath, file);
 		const command = require(filePath);
 		if ('data' in command && 'execute' in command) {
 			commands.push(command.data.toJSON());
