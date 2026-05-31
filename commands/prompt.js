@@ -1,17 +1,20 @@
-const { SlashCommandBuilder } = require('discord.js');
-//const { EmbedBuilder } = require('discord.js');
-const { ApplicationCommandType, EmbedBuilder, Client, CommandInteraction } = require("discord.js");
-const { time, TimestampStyles } = require('discord.js');
+const { ApplicationCommandType, Client, CommandInteraction, EmbedBuilder, SlashCommandBuilder, time, TimestampStyles } = require("discord.js");
 
+function formatTempsJoliment(ns) {
+    const s = ns / 1_000_000_000;
+    
+    if (s < 60) {
+        return `${s.toFixed(2)}s`;
+    }
+    
+    const min = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${min}m${sec}s`;
+}
 
 let isLLMBusy = false;
 
 module.exports = {
-    /**
-   * 
-   * @param {Client} client - The Discord client instance
-   * @param {CommandInteraction} interaction - The interaction object
-   */
     data: new SlashCommandBuilder()
         .setName('prompt')
         .setDescription("Discutez avec CroissantLLM")
@@ -23,7 +26,7 @@ module.exports = {
     async execute(interaction) {
         if (isLLMBusy) {
             return await interaction.reply({ 
-                content: "❌ L'IA est actuellement occupée à générer une autre réponse. Veuillez ré-essayer dans un moment...", 
+                content: "❌ | L'IA est actuellement occupée à générer une autre réponse. Veuillez ré-essayer dans un moment...", 
                 ephemeral: true
             });
         }
@@ -43,11 +46,11 @@ module.exports = {
             })
             .setTitle(userPrompt.substring(0, 1024))
             .setDescription('...')
-            //.addField("Génération de la réponse en cours...", `Dernière mise à jour : ${time(new Date().now(), TimestampStyles.RelativeTime)}`)
         
         let fullResponse = '';
         let lastSentResponse = '';
         let intervalId = null;
+        let totalDurationNs = null;
 
         try {
             const response = await fetch(OLLAMA_URL, {
@@ -80,10 +83,9 @@ module.exports = {
                         }])
 
                     try {
-                        // Discord messages are capped at 2000 characters
                         await interaction.editReply({ embeds: [embed] });
-                    } catch (discordError) {
-                        console.error('Error editing Discord message during stream:', discordError);
+                    } catch (e) {
+                        console.error(e);
                     }
                 }
             }, 5000); // 5s
@@ -112,6 +114,10 @@ module.exports = {
                         if (parsedLine.response) {
                             fullResponse += parsedLine.response;
                         }
+
+                        if (parsedLine.done && parsedLine.total_duration) {
+                           totalDurationNs = parsedLine.total_duration;
+                        }
                     } catch (jsonError) {
                         console.error('Error parsing stream line:', jsonError);
                     }
@@ -128,18 +134,26 @@ module.exports = {
 
         } catch (error) {
             console.error('Ollama Streaming Error:', error);
-            fullResponse = "⚠️ Désolé, une erreur est survenue lors de la communication avec CroissantLLM";
+            fullResponse = "⚠️ | Désolé, une erreur est survenue lors de la communication avec CroissantLLM";
         } finally {
             if (intervalId) clearInterval(intervalId);
+            let finalText = fullResponse.trim();
+            
+            if (!finalText) {
+                finalText = "Je n'ai pas pu générer une réponse valide.";
+            }
 
             try {
-                embed.setDescription(finalOutput.substring(0, 4000))
-                     .setFields([]) // Strips out the countdown metadata cleanly
-                     .setColor('#2ECC71'); // Green for complete
+                embed.setDescription(finalOutput.substring(0, 4096))
+                     .setFields([{ 
+                            name: "Temps total de génération :",
+                            value: formatTempsJoliment(totalDurationNs)
+                        }])
+                     .setColor('#5865f2');
 
                 await interaction.editReply({ embeds: [embed] });
-            } catch (finalDiscordError) {
-                console.error('Error sending final response edit:', finalDiscordError);
+            } catch (e) {
+                console.error(e);
             }
 
             isLLMBusy = false;
